@@ -1,0 +1,28 @@
+(* Lecture 5 notes - Modules
+
+*)
+
+type 'a t = 'a list
+
+
+exception emptyQueue
+let empty = []
+
+ley is_empty q = q = []
+
+let enqueue x q = q @ [x]
+
+let dequeue q = function
+	| [] -> raise emptyQueue
+	| _ :: xs -> xs
+	
+	
+let dequeue_opt = function
+	| [] -> None
+	| _ xs :: -> Some xs
+	
+let front = function 
+	| [] -> raise emptyQueue
+	| x ::_ -> x
+	
+let front_opt

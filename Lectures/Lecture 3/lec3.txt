@@ -1,0 +1,158 @@
+(*Labeled argument and optional argument use the tilde, with labeled argument
+use any order and relative order with non labeled*)
+let f  ~a ~b c d  = (a,b,c,d);;
+
+(*Optional arguments, when not specified or passed their type is None*)
+let f a? b? c = (a,b,c);;
+let f ?a:(Some 1) ?b:(Some 2) 3;;
+(*Or just use tilde with optional too*)
+let f ~a:1 ~b:2 3;;
+(*Optional default arguments*)
+let g ?(a=1) b? c = (a,b,c);;
+g ~a:2 1;;
+
+(*"JUST USE TILDE"*)
+
+(*type annotation for a function*)
+let rec map (f: 'a -> 'b) (l: 'a list) : 'b list =
+	match l with
+	| [] -> []
+	| x :: xs -> f x :: map f xs
+	
+(*	Despite type annotation the compiler can infer type that's more restrictive.
+	But the main use is to restrict they possible types inferred...*)
+
+map (float_of_int) [1;2;3];;
+map (( + ) 1) [1;2;3];;
+
+
+(* String Module Fold functions. Synatax as follows: String.fold_left f acc str*)
+String.fold_left (fun acc c -> if c == 'l' then acc + 1 else acc) 0 "Hello Melloo";;
+String.fold_right (fun c acc -> if c == 'l' then acc + 1 else acc) "Hello Melloo" 0;;
+
+(*Variant type also the Some type*)
+type direction = North | South | West | East;;
+(*Example function takes the variance and returns int*)
+let f = function
+	| North -> 1
+	| South -> 2
+	| West -> 3
+	| East -> 4
+
+(*Option type is aslo called 'maybe' type... and in Ocaml it's either None or Some*)
+(* our own option type *)
+type 'a option' = None' | Some' of 'a
+
+let rec find_maybe f lst =
+	match lst with
+	| [] -> None
+	| x :: _  when f x -> Just x
+	| _ :: xs -> find_maybe f xs;;
+
+find_maybe (fun x -> x mod 3 = 0) [1;2;4;6];;
+
+Resule type has two variants; `Error arg` and `Ok arg`
+
+let sqrt x: float option = if x >= 0. then Some(Stdlib.sqrt x) else None;;
+
+(*To get a result type instead of option type*)
+let sqrt x: float option = if x >= 0. then Ok (Stdlib.sqrt x) else Error "sqrt cannot accept negative numbers.";;
+
+Defining your own result type....
+`result'` is known as a type constructor 
+type ('a, 'b) result' = Ok of 'a | Error of 'b
+(* e.g. Ok' 1; Error' "file does not exist" *)
+
+defining an expression variant
+let expr = 
+| Int of int
+| Add of expr * expr
+| Sub of expr * expr
+| Mul expr * expr
+
+let e = Add (Int 1, Mul (Int 2, Int 3));;
+
+let rec eval e =
+	match e with
+	| Int n -> n
+	| Add (e1, e2) -> eval e1 + eval e2
+	| Sub (e1, e2) -> eval e1 - eval e2
+	| Mul (e1, e2) -> eval e1 * eval e2;;
+	
+eval e;; 
+
+let ( ++ ) e1 e2 = Mul (e1, e2);;
+let ( ** ) e1 e2 = Mul (e1, e2);;
+let e3 = Int 1 ** (Int 2 ** Int 2));;
+
+
+Define our onw list type... but this is inconvenient hence the use of the :: operator
+type 'a mylist = Nil | Cons of 'a * 'a mylist;;
+
+let rec legnth l =
+	match l with
+	| [] -> 0
+	| Nil -> 0
+	| Cons (_, xs) -> 1 + lenght xs;;
+	
+let rec map f l =
+	mathc l with
+	| Nil -> Nil
+	| Cons (x, xs) -> Cons (f x, map f xs);;
+	
+map (( * ) 2) l;;
+
+
+Exception raising using the failwith keyword, it's signature includes any type, so when compiler type checks, it needs to be able to return any type...makes sense I guess.
+Exception Hell;;
+
+let hd l =
+	match l with
+	| Cons (x, _) -> x
+	| [] -> raise Hell;;
+	| Nil -> failwith "hd: empty list";;
+
+Defining Binary Search Trees (BST) and its functions..
+
+type 'a bstree = Leaf | Node of 'a * 'a bstree * 'a bstree
+let bstree_empty = Leaf
+
+let bstree_is_empty t = t = Leaf
+
+let rec bstree_size t =
+	match t with
+	| Leaf -> 0
+	| Node (_, l, r) -> 1 + bstree_size l + bstree r
+	
+let rec bstree_height t =
+	match t with
+	| Leaf -> 0
+	| Node (_, l, r) -> 1 + max (bstree_height l) (bstree_height r)
+	
+let rec bstree_insert z t =
+	match t with
+	| Leaf -> Node (z, Leaf, Leaf)
+	| Node (x, l, r) when z < x -> Node (x, bstree_insert z l, r)
+	| Node (x, l, r) when z > x -> Node (x, l, bstree_insert z r)
+	| _ -> t
+	
+Create a BST from a list
+let bstree_of_list l =
+	List.fold_left (fun acc x -> bstree_insert x acc) bstree_empty l;;
+	
+Keep going right to find largest value...
+let rec bst_largest t = 
+	match t with
+	| Leaf -> failwith "Empty BST" 
+	| Node (x, _, Leaf) -> x
+	| Node (_, _, r) -> bstlargest r
+	
+	
+let rec bstree_delete z t =
+	match z with
+	| Leaf -> LEaf
+	| Node (x, l, r) when z < x -> Node(x, bstree_delete z l , r)
+	| Node (x, l, r) when -> z > x Node (x, l, bstree_delete z r)
+	| Node (_, Leaf, r) -> r
+	| Node (_, l, Leaf) -> l
+	| Node (_, l, r) -> let max = bst_largest l in Node (max, bstree_delete max l, r)
